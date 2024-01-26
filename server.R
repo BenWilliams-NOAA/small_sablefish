@@ -1,9 +1,8 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
-# remotes::install_github("BenWilliams-NOAA/afscassess)
-library(afscassess)
-theme_set(theme_report())
+library(tidytable)
+theme_set(theme_bw())
 
 
 function(input, output, session) {
