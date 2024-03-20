@@ -1,0 +1,200 @@
+##################################################
+# Input data file for discard_proj.dat
+###################################################
+#/////////////////////////////////////////////////
+#/////// Basic Inputs ////////////////////////////
+#/////////////////////////////////////////////////
+# styr                                // start year for projections 
+2024
+# endyr                               // end year for projections
+2073
+# recage                              // assumed age of reccruitment; NOTE: not used in the model, but should be accounted for in subsequent figures of results
+2
+# nages                               // number of ages to model
+30
+#////////////////////////////////////////////////
+#/////// Switches Defining Scenarios ////////////
+#////////////////////////////////////////////////
+# do_full_YPR_switch                  // whether or not to do the full loop over Fs of YPR/SPR/RPR calcs
+                                                          # // ==0, skip (no calcs)
+                                                          # // ==1, do YPR calcs
+1
+# harvest_fract_switch                // whether the full ABC should be harvested or not:
+                                                          # // ==1 full ABC
+                                                          # // ==2 only partial ABC utilization based on harvest_prop
+2
+# retention_type                      // form of retention fxn:
+                                                          # // ==1 knife edge at age
+                                                          # // ==2 logistic
+1
+# recruit_type                        // how to simulate recruitment:
+                                                          # // ==1 use bootstrapping from the SAFE recruitment time series to sim recruitment, recruitment pattern determined by recruit_pattern
+                                                          # // ==2 input recruitment values directly using input_rec vector
+                                                          # // ==3 simulate from a distribution (NOT IMPLEMENTED)
+1
+# recruit_pattern                     // when recruitment_type ==1, recruitment is chosen from the bootstrapped recruitment based on the:
+                                                          # // ==1 full time series of recruitment from SAFE
+                                                          # // ==2 recent time series from SAFE (2014+)
+                                                          # // ==3 (low-hi pattern) full recruitment time series for first half of time series, recent recruitment time series for second half of time series
+                                                          # // ==4 (hi-low pattern) recent recruitment time series for first half of time series, full recruitment time series for second half of time series
+1
+# recruit_regime_shift                // method for calculating the B40% reference point from the SPR value:
+                                                          # // ==1 (status quo used for NPFMC B40% projections) no regime shift (multiply SPR by long-term mean recruitment),
+                                                          # // ==2 assume regime shift (multiply SPR by recent, 2014+,  mean recruitment)
+1
+# M_type                              // define variability in M:
+                                                           # // ==1 input M as a constant
+                                                          # // ==2 age-varying
+1
+# HCR_type;                           // the HCR used to calculate ABC:
+                                                          # // ==1 (status quo) use the default B40% NPFMC HCR
+                                                          # // ==2 (developmental) capped HCR (use the B40% HCR if B<B40%, but set F to derived F that attains landings_cap otherwise); cap for FG landings ONLY
+                                                          # // ==3 (developmental) capped HCR (use the B40% HCR if B<B40%, but set F to derived F that attains landings_cap otherwise); cap for FG+trawl landings ONLY
+1
+# price_type                          // correlation of price with ABC:
+                                                          # // ==1, (status quo) price is constant based in input price
+                                                          # // ==2, price is constant at recent average
+                                                          # // ==3 (developmental) linear increase in price to 2017 max prices as move towards 2017 landings
+1
+#////////////////////////////////////////////////
+#/////// YPR Calc Inputs   //////////////////////
+#////////////////////////////////////////////////  
+# F_YPR_start                         // starting value for YPR F calcs
+0
+# F_YPR_end                           // ending value for YPR F calcs
+0.5
+# n_F_incr_ypr                        // number steps in F for YPR, defines increment size in F; NOTE: need to add 1 to number of increments to account for starting value if want to actually end with the F_YPR_end value
+201
+#////////////////////////////////////////////////
+#/////// Biological Inputs //////////////////////
+#////////////////////////////////////////////////  
+# spawn_month
+1
+# p_mature(1,nages)                   // maturity
+0.022375363 0.046018622 0.092286518 0.176467916 0.311118342 0.487670289 0.667353261 0.808734125 0.899109861 0.949450979 0.975361733 0.988156652 0.994345552 0.997309166 0.998721485 0.999392981 0.999711899 0.999863285 0.999935129 0.99996922 0.999985396 0.999993071 0.999996712 0.99999844 0.99999926 0.999999649 0.999999833 0.999999921 0.999999962 0.999999982
+# wt_m(1,nages)                       // weight males
+1.0695 1.4409 1.7768 2.0663 2.3077 2.5044 2.6622 2.7872 2.8854 2.962 3.0214 3.0674 3.1029 3.1302 3.1511 3.1672 3.1796 3.189 3.1963 3.2018 3.2061 3.2093 3.2118 3.2137 3.2152 3.2163 3.2171 3.2178 3.2183 3.2193
+# wt_f(1,nages)                       // weight females
+1.1289 1.5716 2.0231 2.4639 2.8806 3.2653 3.614 3.9258 4.2014 4.4427 4.6527 4.8342 4.9903 5.1242 5.2385 5.336 5.4188 5.4891 5.5486 5.599 5.6416 5.6775 5.7079 5.7335 5.755 5.7732 5.7885 5.8014 5.8122 5.8455
+# prop_m                              // proportion of males in pop
+0.5
+# M_cnst;                             // natural mortality when constant when M_type ==1
+0.11318
+# M_age(1,nages)                      // Natural mortality by age when M_type ==2
+0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1
+#////////////////////////////////////////////////
+#/////// Recruitment and Abundance  Pars ////////
+#//////////////////////////////////////////////// 
+# nyrs_SAFE_rec_full                  // number of years of recruitment to read from SAFE
+43
+# yrs_SAFE_rec_recent                 // recent number of years of recruitment to read from SAFE (2014 cohort+)
+6
+# rec_full(1,nyrs_SAFE_rec_full)      // the full time series of recruitment from the SAFE
+84 41.8 19.3 74.3 36.2 14.3 16 23.9 10.1 7.2 8.4 11.7 22.8 7.9 24.3 6.8 7.3 12.2 20.3 10.1 36.4 16 16.2 42.6 13.3 9.9 11.8 7.6 10.2 9.7 15.7 21.3 10.3 11.2 4.7 7.5 14.4 49.5 21.7 95.4 86.5 40.6 75.1
+# rec_recent(1,nyrs_SAFE_rec_recent)  // the recent time series of recruitment from the SAFE
+49.5 21.7 95.4 86.5 40.6 75.1
+# input_rec(1,nyrs)                   // time series of recruitment inputs when recruitment_type ==2
+84 41.8 19.3 74.3 36.2 14.3 16 23.9 10.1 7.2 8.4 11.7 22.8 7.9 24.3 6.8 7.3 12.2 20.3 10.1 36.4 16 16.2 42.6 13.3 9.9 11.8 7.6 10.2 9.7 15.7 21.3 10.3 11.2 4.7 7.5 14.4 49.5 21.7 95.4 86.5 40.6 75.1 42.7 49.5 21.7 95.4 86.5 40.6 75.1
+# mean_rec_full                       // the average recruitment value (long-term mean) for the normal distribution when recruitment_type ==3
+25.267
+# mean_rec_recent                     // the average recruitment value (recent mean) for the normal distribution when recruitment_type ==3
+61.5
+# stdev_rec_full                      // the standard deviation of recruitment (long-term) for the normal distribution when recruitment_type ==3
+28.72
+# stdev_rec_recent                    // the standard deviation of recruitment (recent) for the normal distribution when recruitment_type ==3
+27.2
+# init_abund_f(1,nages)               // initial abundance females
+13.3573 18.8639 28.6999 13.1462 23.6901 22.0343 4.20784 8.0558 1.97475 0.884106 0.480217 0.97198 0.7449 1.27809 0.782861 0.402145 0.355307 0.220658 0.285865 0.199756 0.223183 0.592066 0.185388 0.151718 0.28647 0.0658995 0.110628 0.0554663 0.0277771 0.309671
+# init_abund_m(1,nages)               // initial abundance males
+13.3573 18.9796 29.4677 13.9226 25.6394 24.2379 4.69707 9.11796 2.26897 1.0129 0.546377 1.11847 0.873044 1.52319 0.944033 0.487862 0.432456 0.269916 0.352534 0.248644 0.280519 0.752788 0.238505 0.196966 0.374325 0.086648 0.146439 0.0737984 0.037146 0.469343  
+#////////////////////////////////////////////////
+#/////// F and SLX  Pars ////////////////////////
+#//////////////////////////////////////////////// 
+# ABC_SAFE(1,3)                       // last three ABCs from most recent SAFE (terminal year and 2 projected ABCs)
+40.5
+47.2
+47.4
+# landings_SAFE                       // total landings from the last SAFE (which survival and abund calcs in terminal year are based on)
+27.23
+# landings_cap                        // when HCR_type==2, set the fixed gear landings to this value; NOTE: imperfectly implemented, but generally gets landings into ballpark
+15
+# harvest_prop_input                  // when harvest_fract_switch==2, determines the proportion of ABC to be harvested
+0.66
+# fract_trawl                         // fraction of F from trawl gear
+0.255
+# log_FG_a50_f                        // female fixed gear fishery age at 50% selection
+0.658294129459
+# log_FG_delta_f                      // female fixed gear fishery age between 50% selection and 95% selection
+0.814986100976
+# log_FG_a50_m                        // male fixed gear fishery age at 50% selection
+1.06312413114
+# log_FG_delta_m                      // male fixed gear fishery age between 50% selection and 95% selection
+-0.379568217967
+# log_trawl_a50_f                     // female trawl gear fishery age at 50% selection
+1.77013905300
+# log_trawl_delta_f                   // female trawl gear fishery age between 50% selection and 95% selection
+2.33150648629
+# log_trawl_a50_m                     // male trawl gear fishery age at 50% selection
+2.10484881040
+# log_trawl_delta_m                   // male trawl gear fishery age between 50% selection and 95% selection
+2.33150648629
+# S_f_SAFE_term(1,nages)              // female survival during SAFE terminal year to get abundance in start of projection
+0.883707 0.866794 0.852894 0.849661 0.84897 0.848842 0.848973 0.849269 0.849679 0.850165 0.850697 0.851254 0.851819 0.852381 0.852931 0.853462 0.85397 0.854452 0.854907 0.855333 0.85573 0.856099 0.85644 0.856755 0.857045 0.857311 0.857555 0.857777 0.857981 0.858165
+# S_m_SAFE_term(1,nages)              // male survival during SAFE terminal year to get abundance in start of projection
+0.890343 0.883168 0.875557 0.868633 0.863333 0.859847 0.85782 0.856782 0.856369 0.85634 0.856549 0.856907 0.857357 0.857864 0.858402 0.858953 0.859504 0.860047 0.860573 0.861079 0.86156 0.862016 0.862444 0.862844 0.863216 0.863561 0.86388 0.864173 0.864441 0.864687
+#////////////////////////////////////////////////
+#/////// Retention and DMR  Pars ////////////////
+#//////////////////////////////////////////////// 
+# ret_age_f                           // female age that start retaining fish when retention type ==1, NOTE: this is actual age-1 because model running from age 1 (==real age-2)
+1 #2
+# ret_a50_f;                          // female retention logistic fxn age at 50% retention when retention type ==2, NOTE: this is actual age minus 1 because model running from age 1 (==real age-2)
+2
+# ret_delta_f                         // female retention logistic fxn age between 50% retention and 95% retention when retention type ==2
+1
+# ret_age_m                           // male age that start retaining fish when retention type ==1, NOTE: this is actual age minus 1 because model running from age 1 (==real age-2)
+1 #2
+# ret_a50_m                           // male retention logistic fxn age at 50% retention when retention type ==2, NOTE: this is actual age minus 1 because model running from age 1 (==real age-2)
+2
+# ret_delta_m                         // male retention logistic fxn age between 50% retention and 95% retention when retention type ==2
+1 
+# DMR_f                               // female discard mortality rate
+0.
+# DMR_m                               // male discard mortality rate
+0.
+#////////////////////////////////////////////////
+#/////// Price Pars /////////////////////////////
+#////////////////////////////////////////////////
+# price_age_f(1,nages)                // when price_type==1, price per kg at each age
+0.597895623 1.320303448 1.320303448 1.856562267 2.610111345 2.610111345 6.01401531 6.01401531 6.01401531 6.01401531 6.01401531 6.01401531 6.01401531 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875 7.435514875
+# price_age_m(1,nages)                // when price_type==1, price per kg at each age
+0.597895623 0.597895623 1.320303448 1.320303448 1.856562267 1.856562267 1.856562267 1.856562267 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345 2.610111345
+# price_age_f_avg(1,nages)            // when price_type==2, price per kg at each age
+3.174810198 4.032581075 4.032581075 5.07806117 6.215281823 6.215281823 8.736081416 8.736081416 8.736081416 8.736081416 8.736081416 8.736081416 8.736081416 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175 10.55367175
+# price_age_m_avg(1,nages)            // when price_type==2, price per kg at each age
+3.174810198 3.174810198 4.032581075 4.032581075 5.07806117 5.07806117 5.07806117 5.07806117 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823 6.215281823
+# price_land_max                      // when price type==3, the landings associated with the maximum price (e.g., 2017)
+12.3
+# max_price_f                         // when price_type==3, sets the maximum price at age
+7.917460094 8.40756497 8.40756497 9.944657109 11.46480347 11.46480347 12.97470389 12.97470389 12.97470389 12.97470389 12.97470389 12.97470389 12.97470389 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658 14.86275658
+# max_price_m                         // when price_type==3, sets the maximum price at age
+7.917460094 7.917460094 8.40756497 8.40756497 9.944657109 9.944657109 9.944657109 9.944657109 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347 11.46480347
+#////////////////////////////////////////////////
+#/////// Newton_Raphson Pars ////////////////////
+#////////////////////////////////////////////////
+# max_Fnew                            // maximum F during NR search 
+1.0
+# Fnew_start                          // starting F for NR search
+0.05
+# NR_iterations                       // number of NR iterations to derive F for desired landings
+15
+#NR_dev                               // size of step/deviation when doing iterative NR search for F
+0.001
+#////////////////////////////////////////////////
+#/////// RNG Pars /////////////////////////////
+#//////////////////////////////////////////////// 
+# RNG_seed_rec_full                   // seed for random number generator for recruitment from full time series
+5
+# RNG_seed_rec_recent                 // seed for random number generator for recruitment from recent time series
+2
+# debug_end
+666
