@@ -127,7 +127,7 @@ plotit <- function(data, x, y) {
   plotly::ggplotly(p)
 }
 
-quants <- function(data, var, scenario) {
+quants <- function(data, var, recr, dmr, ret_age) {
   q_name <- tidytable::map_chr(seq(.025,.975,.05), ~ paste0("q", .x*100))
   q_fun <- tidytable::map(seq(.025,.975,.05), ~ purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>%
     purrr::set_names(nm = q_name)
@@ -151,7 +151,9 @@ quants <- function(data, var, scenario) {
                       max = max(value),
                       .by = c(years, grouping),
                       id = !!var,
-                      scenario = scenario) 
+                      recruitment = recr,
+                      dmr = dmr,
+                      retention = ret_age) 
 }
 
 plot_swath <- function(data, x) {
@@ -163,4 +165,17 @@ plot_swath <- function(data, x) {
     # ggplot2::ylab("Revenue OFL") +
     # ggplot2::xlab("Year") +
     ggplot2::expand_limits(y = 0) 
+}
+
+plot_swath2 <- function(data, x) {
+  data %>%
+    ggplot2::ggplot(ggplot2::aes({{x}}, group = interaction(grouping, scenario), color = scenario, fill = scenario)) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = min, ymax = max), alpha = 0.07, color = NA) +
+    ggplot2::geom_line(ggplot2::aes(y = median)) +
+    afscassess::scale_x_tickr(data=data, var={{x}}, to=10, start = 2024) +
+    # ggplot2::ylab("Revenue OFL") +
+    # ggplot2::xlab("Year") +
+    ggplot2::expand_limits(y = 0) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    scico::scale_fill_scico_d(palette = 'roma')
 }
