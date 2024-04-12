@@ -5,6 +5,7 @@ library(purrr)
 library(ggplot2)
 library(afscassess)
 library(scico)
+library(vroom)
 theme_set(theme_report())
 
 # globals 
@@ -87,14 +88,17 @@ get_vals <- function(REP, years, ages) {
                    rev_ofl = vals('rev_ofl', REP))
   # age related data 
   ad <- data.frame(age = ages,
-                   mat = vals('mat', REP),
-                   wt_m = vals('wt_m', REP),
-                   wt_f = vals('wt_f', REP),
-                   m = vals('m', REP),
                    price_age_f = vals('price_age_f', REP),
-                   price_age_m = vals('price_age_m', REP))
+                   price_age_m = vals('price_age_m', REP),
+                   slx_fg_f = vals('slx_fg_f', REP),
+                   slx_fg_m = vals('slx_fg_f', REP),
+                   slx_tr_f = vals('slx_tr_f', REP),
+                   slx_tr_m = vals('slx_tr_m', REP),
+                   ret_fg_f = vals('ret_fg_f', REP),
+                   ret_fg_m = vals('ret_fg_m', REP))
   caa = vals('caa_ofl_dead_f', REP, years, ages)
-  list(ts = ts, ad = ad, caa = caa)
+  raa = vals('raa', REP, years, ages)
+  list(ts = ts, ad = ad, caa = caa, raa = raa)
 }
 pull_data <- function(loc, years, ages) {
   files <- list.files(loc, pattern="*.rep", full.names=TRUE)
@@ -113,7 +117,10 @@ pull_data <- function(loc, years, ages) {
   do.call(mapply, c(list, newd, SIMPLIFY=FALSE))$caa %>% 
     purrr::map_df(., ~as.data.frame(.x), .id = "sim") -> caa
   
-  list(ts = ts, ad = ad, caa = caa)
+  do.call(mapply, c(list, newd, SIMPLIFY=FALSE))$raa %>% 
+    purrr::map_df(., ~as.data.frame(.x), .id = "sim") -> raa
+  
+  list(ts = ts, ad = ad, caa = caa, raa = raa)
 }
 
 plotit <- function(data, x, y) {
@@ -151,9 +158,7 @@ quants <- function(data, var, recr, dmr, ret_age) {
                       max = max(value),
                       .by = c(years, grouping),
                       id = !!var,
-                      recruitment = recr,
-                      dmr = dmr,
-                      retention = ret_age) 
+                      scenario = paste(recr, dmr, ret_age, sep = '-')) 
 }
 
 plot_swath <- function(data, x) {
