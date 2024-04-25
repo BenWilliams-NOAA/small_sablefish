@@ -1,88 +1,59 @@
-
+# load ----0
 source(here::here('R', 'utils.R'))
 
-# read in report file
-data <- pull_data(here::here('data', 'base'), years, ages) 
-hist_12 <- pull_data(here::here('data', 'hist_12'), years, ages) 
-low_hi_12 <- pull_data(here::here('data', 'low_hi_12'), years, ages) 
-hi_low_12 <- pull_data(here::here('data', 'hi_low_12'), years, ages) 
-rec_12 <- pull_data(here::here('data', 'rec_12'), years, ages) 
+# get all files
+fls <- tolower(list.files(here::here('data'), pattern = ".RData", full.names = F))
 
-# timeseries stuff
-ts <- data$ts
-tsh12 <- hist_12$ts
-tslh12 <- low_hi_12$ts
-tshl12 <- hi_low_12$ts
-tsr12 <- rec_12$ts
+# filter to groupings of files 
+four_fls <- fls[grepl('age-4', fls)]
+five_fls <- fls[grepl('age-5', fls)]
+cap_fls <- fls[grepl('cap_hcr', fls) & !grepl('var', fls)]
+cap_var_fls <- fls[grepl('cap_hcr', fls) & grepl('var', fls) & !grepl('hind', fls)]
+full_abc_fls <- fls[grepl('full_abc', fls) & !grepl('hind', fls) & !grepl('cap', fls)]
+log_fls <- fls[grepl('log', fls)]
+avg_fls <- fls[grepl('price_avg', fls)]
+var_fls <- fls[grepl('price_var', fls) & !grepl('cap', fls)]
+reg_fls <- fls[grepl('reg', fls)]
+trwl_fls <- fls[grepl('trwl', fls)]
+hind_cap_fls <- fls[grepl('hind', fls) & grepl('cap', fls)]
+hind_var_fls <- fls[grepl('hind', fls) & !grepl('cap', fls)]
 
-# age data stuff
-ad <- data$ad
+base_fls <- fls[!grepl('trwl', fls, ignore.case = T) &
+                  !grepl('var', fls, ignore.case = T) &
+                  !grepl('cap', fls, ignore.case = T) &
+                  !grepl('hind', fls, ignore.case = T) &
+                  !grepl('full_abc', fls, ignore.case = T) &
+                  !grepl('avg', fls, ignore.case = T) & 
+                  !grepl('reg', fls, ignore.case = T) &
+                  !grepl('log', fls, ignore.case = T) &
+                  !grepl('age-4', fls, ignore.case = T) & 
+                  !grepl('age-5', fls, ignore.case = T)]
 
-recr = 'h' # historical 
-dmr = 0 # no mortality, cause no discards
-ret_age = 1 # keep em all 
-dead_catch <- quants(ts, 'dead_catch', recr, dmr, ret_age)
-rev_abc <- quants(ts, 'rev_abc', recr, dmr, ret_age)
-rev <- quants(ts, 'rev', recr, dmr, ret_age)
-ssb <- quants(ts, 'ssb', recr, dmr, ret_age)
-bio <- quants(ts, 'bio', recr, dmr, ret_age)
-
-
-recr = 'h'
-dmr = 12 # 12% dmr
-ret_age = 3 # knife-edge age-3
-dead_catch1 <- quants(tsh12, 'dead_catch', recr, dmr, ret_age)
-rev_abc1 <- quants(tsh12, 'rev_abc', recr, dmr, ret_age)
-rev1 <- quants(tsh12, 'rev', recr, dmr, ret_age)
-ssb1 <- quants(tsh12, 'ssb', recr, dmr, ret_age)
-bio1 <- quants(tsh12, 'bio', recr, dmr, ret_age)
-
-recr = 'hi-lo'
-dmr = 12
-ret_age = 3
-dead_catch2 <- quants(tslh12, 'dead_catch', recr, dmr, ret_age)
-rev_abc2 <- quants(tslh12, 'rev_abc', recr, dmr, ret_age)
-rev2 <- quants(tslh12, 'rev', recr, dmr, ret_age)
-ssb2 <- quants(tslh12, 'ssb', recr, dmr, ret_age)
-bio2 <- quants(tslh12, 'bio', recr, dmr, ret_age)
+base <- cleanup(base_fls) 
+trwl_10 <- cleanup(trwl_fls, id='-trwl_10') 
+reg_shift <- cleanup(reg_fls, id='-reg_shft') 
+var <- cleanup(var_fls, id='-var') 
+avg <- cleanup(base_fls, id='-avg') 
+log <- cleanup(base_fls, id='-log') 
+full_abc <- cleanup(full_abc_fls, id='-full_abc') 
+cap <- cleanup(cap_fls, id='-cap') 
+cap_var <- cleanup(cap_var_fls, id='-cap_var') 
+hind_cap <- cleanup(hind_cap_fls, id='-hind_cap') 
+hind_var <- cleanup(hind_var_fls, id='-hind_var') 
+four <- cleanup(four_fls, age=4) 
+five <- cleanup(five_fls, age=5) 
 
 
-recr = 'lo-hi'
-dmr = 12
-ret_age = 3
-dead_catch3 <- quants(tshl12, 'dead_catch', recr, dmr, ret_age)
-rev_abc3 <- quants(tshl12, 'rev_abc', recr, dmr, ret_age)
-rev3 <- quants(tshl12, 'rev', recr, dmr, ret_age)
-ssb3 <- quants(tshl12, 'ssb', recr, dmr, ret_age)
-bio3 <- quants(tshl12, 'bio', recr, dmr, ret_age)
-
-recr = 'recent'
-dmr = 12
-ret_age = 3
-dead_catch4 <- quants(tsr12, 'dead_catch', recr, dmr, ret_age)
-rev_abc4 <- quants(tsr12, 'rev_abc', recr, dmr, ret_age)
-rev4 <- quants(tsr12, 'rev', recr, dmr, ret_age)
-ssb4 <- quants(tsr12, 'ssb', recr, dmr, ret_age)
-bio4 <- quants(tsr12, 'bio', recr, dmr, ret_age)
-
-rev %>% 
-  mutate(scenario = paste(recruitment, dmr, retention, sep = '-' )) %>% 
-  bind_rows(  rev1 %>% mutate(scenario = paste(recruitment, dmr, retention, sep = '-' )),
-              rev2 %>% mutate(scenario = paste(recruitment, dmr, retention, sep = '-' )),
-              rev3 %>% mutate(scenario = paste(recruitment, dmr, retention, sep = '-' )),
-              rev4%>% mutate(scenario = paste(recruitment, dmr, retention, sep = '-' ))) -> newd
-
-
-plot_swath2(newd, years) + 
-  facet_wrap(~scenario)
-
-
-
-plot_swath(dead_catch, years)
-plot_swath(rev_abc, years)
-plot_swath(rev, years) + 
-  ylab('revenue')
-plot_swath(ssb, years) + 
-  ylab('ssb')
-plot_swath(bio, years) + 
-  ylab('total biomass')
+saveRDS(base, here::here('output', 'base.RDS'))
+saveRDS(trwl_10, here::here('output', 'trwl_10.RDS'))
+saveRDS(reg_shift, here::here('output', 'reg_shift.RDS'))
+saveRDS(var, here::here('output', 'var.RDS'))
+saveRDS(avg, here::here('output', 'avg.RDS'))
+saveRDS(log, here::here('output', 'log.RDS'))
+saveRDS(full_abc, here::here('output', 'full_abc.RDS'))
+saveRDS(cap, here::here('output', 'cap.RDS'))
+saveRDS(cap_var, here::here('output', 'cap_var.RDS'))
+saveRDS(hind_cap, here::here('output', 'hind_cap.RDS'))
+saveRDS(hind_var, here::here('output', 'hind_var.RDS'))
+saveRDS(four, here::here('output', 'four.RDS'))
+saveRDS(five, here::here('output', 'five.RDS'))
