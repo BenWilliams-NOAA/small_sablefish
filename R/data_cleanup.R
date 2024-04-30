@@ -29,12 +29,17 @@ base_fls <- fls[!grepl('trwl', fls, ignore.case = T) &
                   !grepl('age-4', fls, ignore.case = T) & 
                   !grepl('age-5', fls, ignore.case = T)]
 
+# readRDS(here::here('data', "price_avg_hist_recr_dmr_20__sc.rdata"  )) -> dd
+# 
+# dd$ts %>% select(years, rev) %>% 
+#   group_by(years) %>% summarise(rev = median(rev)) %>% pull(rev)
+
 base <- cleanup(base_fls) 
 trwl_10 <- cleanup(trwl_fls, id='-trwl_10') 
 reg_shift <- cleanup(reg_fls, id='-reg_shft') 
 var <- cleanup(var_fls, id='-var') 
-avg <- cleanup(base_fls, id='-avg') 
-log <- cleanup(base_fls, id='-log') 
+avg <- cleanup(avg_fls, id='-avg') 
+log <- cleanup(log_fls, id='-log') 
 full_abc <- cleanup(full_abc_fls, id='-full_abc') 
 cap <- cleanup(cap_fls, id='-cap') 
 cap_var <- cleanup(cap_var_fls, id='-cap_var') 
@@ -42,6 +47,9 @@ hind_cap <- cleanup(hind_cap_fls, id='-hind_cap')
 hind_var <- cleanup(hind_var_fls, id='-hind_var') 
 four <- cleanup(four_fls, age=4) 
 five <- cleanup(five_fls, age=5) 
+
+avg$ts$dmr20 %>% 
+  filter(id=='rev')
 
 
 saveRDS(base, here::here('output', 'base.RDS'))

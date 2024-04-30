@@ -456,21 +456,20 @@ png(filename=here::here("figs", "alt_price.png"), width = 6.5, height = 6.5,
     units = "in", type ="cairo", res = 200)
 
 bind_rows(
-  bind_rows(base$ts), 
-  bind_rows(avg$ts), 
+  bind_rows(base$ts),
+  bind_rows(avg$ts),
   bind_rows(var$ts),
   bind_rows(full_abc$ts),
   bind_rows(trwl_10$ts)
 ) %>% 
   filter(id %in% c('ssb', 'dead_catch', 'rev', 'dead'),
-         scenario %in% c('hist-0-1', 'hist-20-3-full_abc', 'hist-20-3-trwl', 'hist-20-3-avg', 'hist-20-3-var', 'hist-20-3-trwl_10')) %>% 
+         scenario %in% c('hist-0-1', 'hist-20-3-full_abc', 'hist-20-3-avg', 'hist-20-3-var', 'hist-20-3-trwl_10')) %>% 
   mutate(
     scenario = case_when(grepl('-0-1', scenario) ~ 'Full Retention',
                          grepl('-20-3-full_abc', scenario) ~ 'Full ABC',
                          grepl('-20-3-avg', scenario) ~ 'Average price',
                          grepl('-20-3-var', scenario) ~ 'Variable price',
-                         # grepl('-20-3', scenario) ~ 'Age 3 (knife-edge)',
-                         grepl('-20-3-trwl_10', scenario) ~ 'Trawl 10%',
+                          grepl('-20-3-trwl_10', scenario) ~ 'Trawl 10%',
                          TRUE ~ scenario),
     median = ifelse(id == 'dead', mean, median),
     id = case_when(id == 'dead' ~ 'Dead discards',
@@ -484,13 +483,11 @@ bind_rows(
   afscassess::scale_x_tickr(data=base$ts$no_disc, var=years, to=10, start = 2020)  +
   facet_wrap(~id, scales = 'free_y') +
   scico::scale_color_scico_d(name = 'Scenario', palette = 'roma', breaks = c('Full Retention',
-                                                                             'Age 3 (knife-edge)',
                                                                              'Average price',
                                                                              'Variable price',
                                                                              'Full ABC',
                                                                              'Trawl 10%'), begin = 0.2) +
   scico::scale_fill_scico_d(name = 'Scenario', palette = 'roma', breaks = c('Full Retention',
-                                                                            'Age 3 (knife-edge)',
                                                                             'Average price',
                                                                             'Variable price',
                                                                             'Full ABC',

@@ -359,7 +359,7 @@ cleanup <- function(files, id=NULL, age=3){
   
   if(length(a)>0){
     list(ts = list(no_disc=a, dmr12=b, dmr20=c, dmr35=d),
-         ad = list(no_disc=aa, dmr12=ba, dmr20=da, dmr35=da)) 
+         ad = list(no_disc=aa, dmr12=ba, dmr20=da, dmr35=da)) -> avg
   } else {
     list(ts = list(dmr12=b, dmr20=c, dmr35=d),
          ad = list(dmr12=ba, dmr20=da, dmr35=da))
