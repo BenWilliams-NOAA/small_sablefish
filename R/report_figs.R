@@ -23,7 +23,7 @@ five <- readRDS(here::here('output', 'five.RDS'))
 
 # median tables ------
 bind_rows(bind_rows(log$ts), bind_rows(full_abc$ts), bind_rows(trwl_10$ts), bind_rows(avg$ts), bind_rows(var$ts)) %>%   
-  filter(grepl('hist-20', scenario)) %>% #,
+  filter(id!='recr', grepl('hist-0', scenario)) %>% #,
   # years %in% 2025:2034) %>%
   mutate(median = ifelse(id == 'dead', mean, median)) %>% 
   # mutate(type = case_when(grepl('-log', scenario) ~ log,
@@ -32,7 +32,7 @@ bind_rows(bind_rows(log$ts), bind_rows(full_abc$ts), bind_rows(trwl_10$ts), bind
   #        scenario = gsub('.{2}$', '', scenario)) %>% 
   group_by(scenario, id) %>% 
   summarise(m = mean(median, na.rm=T))  %>% 
-  pivot_wider(names_from = scenario, values_from = m) 
+  pivot_wider(names_from = scenario, values_from = m) %>% View
 
 bind_rows(base$ts) %>% 
   filter(
@@ -459,16 +459,18 @@ bind_rows(
   bind_rows(base$ts), 
   bind_rows(avg$ts), 
   bind_rows(var$ts),
-  bind_rows(full_abc$ts)
+  bind_rows(full_abc$ts),
+  bind_rows(trwl_10$ts)
 ) %>% 
   filter(id %in% c('ssb', 'dead_catch', 'rev', 'dead'),
-         scenario %in% c('hist-0-1', 'hist-20-3-full_abc', 'hist-20-3-trwl', 'hist-20-3-avg', 'hist-20-3-var')) %>% 
+         scenario %in% c('hist-0-1', 'hist-20-3-full_abc', 'hist-20-3-trwl', 'hist-20-3-avg', 'hist-20-3-var', 'hist-20-3-trwl_10')) %>% 
   mutate(
     scenario = case_when(grepl('-0-1', scenario) ~ 'Full Retention',
                          grepl('-20-3-full_abc', scenario) ~ 'Full ABC',
                          grepl('-20-3-avg', scenario) ~ 'Average price',
                          grepl('-20-3-var', scenario) ~ 'Variable price',
-                         grepl('-20-3', scenario) ~ 'Age 3 (knife-edge)',
+                         # grepl('-20-3', scenario) ~ 'Age 3 (knife-edge)',
+                         grepl('-20-3-trwl_10', scenario) ~ 'Trawl 10%',
                          TRUE ~ scenario),
     median = ifelse(id == 'dead', mean, median),
     id = case_when(id == 'dead' ~ 'Dead discards',
@@ -485,12 +487,14 @@ bind_rows(
                                                                              'Age 3 (knife-edge)',
                                                                              'Average price',
                                                                              'Variable price',
-                                                                             'Full ABC'), begin = 0.2) +
+                                                                             'Full ABC',
+                                                                             'Trawl 10%'), begin = 0.2) +
   scico::scale_fill_scico_d(name = 'Scenario', palette = 'roma', breaks = c('Full Retention',
                                                                             'Age 3 (knife-edge)',
                                                                             'Average price',
                                                                             'Variable price',
-                                                                            'Full ABC'), begin = 0.2) +
+                                                                            'Full ABC',
+                                                                            'Trawl 10%'), begin = 0.2) +
   ylab("") +
   xlab("Year") +
   expand_limits(y=0)
