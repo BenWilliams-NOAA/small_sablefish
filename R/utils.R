@@ -120,26 +120,62 @@ pull_data <- function(loc, years, ages) {
 
 # function for determining the quantiles for each variable, and appending id for future identification
 # for time series data 
+
+# quantile_df <- function(x, probs = c(0.075,0.25, 0.5, 0.75, 0.925)) {
+#   tibble(
+#     val = quantile(x, probs, na.rm = TRUE),
+#     median = median(x),
+#     quant = probs
+#   )
+# }
+# 
+# quants <- function(x, probs = c(0.075, 0.25, 0.75, 0.925)) {
+#   tibble(
+#     val = quantile(x, probs, na.rm = TRUE),
+#     median = median(x),
+#     mean = mean(x),
+#     se = sd(x) / sqrt(n()),
+#     quant = probs
+#   ) %>% 
+#   mutate(lci = mean - 1.96 * se,
+#          uci = mean + 1.96 * se) 
+# }
+
+
+# a0$ts %>% 
+#   reframe(
+#     across(c(ssb, recr, dead_catch, bio, dead, rev), quants, .unpack=T), 
+#     .by = years
+#     ) %>% pivot_longer(-years) %>% 
+#     mutate(id = gsub('\\_.*', '', name),
+#           id1 = gsub('.*\\_', '', name)) %>% 
+#      head()
+# 
+# a0$ad %>% 
+#   reframe(
+#     across(c(ypr_age, spr_age, rpr_age), quants, .unpack=T), 
+#     .by = age
+#     ) %>% 
+#      head()     
+# 
+# x <- c(10, 15, 18, 12)
+# quants(x)
+# a0$ts %>% 
+#   reframe(quantile_df(ssb, recr, dead_catch, bio, dead, rev), .by = years)
+
 quants <- function(data, var, recr, dmr, ret_age) {
-  q_name <- tidytable::map_chr(seq(.025,.975,.05), ~ paste0("q", .x*100))
-  q_fun <- tidytable::map(seq(.025,.975,.05), ~ purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>%
+  q_name <- tidytable::map_chr(c(0.075,0.25, 0.75, 0.925), ~ paste0("q", .x*100))
+  q_fun <- tidytable::map(c(0.075,0.25, 0.75, 0.925), ~ purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>%
     purrr::set_names(nm = q_name)
   
   data %>% 
     tidytable::select(years, {{var}}) %>% 
     dplyr::group_by(years) %>%
     dplyr::summarise_at(dplyr::vars({{var}}), tibble::lst(!!!q_fun, median)) %>% 
-    tidytable::pivot_longer(-c(years, median)) %>%
-    tidytable::mutate(grouping = tidytable::case_when(name == q_name[1] | name == q_name[20] ~ 1,
-                                                      name == q_name[2] | name == q_name[19] ~ 2,
-                                                      name == q_name[3] | name == q_name[18] ~ 3,
-                                                      name == q_name[4] | name == q_name[17] ~ 4,
-                                                      name == q_name[5] | name == q_name[16] ~ 5,
-                                                      name == q_name[6] | name == q_name[15] ~ 6,
-                                                      name == q_name[7] | name == q_name[14] ~ 7,
-                                                      name == q_name[8] | name == q_name[13] ~ 8,
-                                                      name == q_name[9] | name == q_name[12] ~ 9,
-                                                      name == q_name[10] | name == q_name[11] ~ 10)) %>% 
+    tidytable::pivot_longer(-c(years, median)) %>% 
+    tidytable::mutate(grouping = tidytable::case_when(name == q_name[1] | name == q_name[4] ~ 1,
+                                                      name == q_name[2] | name == q_name[3] ~ 2
+                                                      )) %>% 
     tidytable::mutate(min = min(value),
                       max = max(value),
                       .by = c(years, grouping),
@@ -149,8 +185,8 @@ quants <- function(data, var, recr, dmr, ret_age) {
 
 # same, but for age data 
 quantsa <- function(data, var, recr, dmr, ret_age) {
-  q_name <- tidytable::map_chr(seq(.025,.975,.05), ~ paste0("q", .x*100))
-  q_fun <- tidytable::map(seq(.025,.975,.05), ~ purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>%
+  q_name <- tidytable::map_chr(c(0.075,0.25, 0.75, 0.925), ~ paste0("q", .x*100))
+  q_fun <- tidytable::map(c(0.075,0.25, 0.75, 0.925), ~ purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>%
     purrr::set_names(nm = q_name)
   
   data %>% 
@@ -178,8 +214,8 @@ quantsa <- function(data, var, recr, dmr, ret_age) {
 # same but returns a mean instead of median 
 # currently only used for 'dead' variable
 quants_mean <- function(data, var, recr, dmr, ret_age) {
-  q_name <- tidytable::map_chr(seq(.025,.975,.05), ~ paste0("q", .x*100))
-  q_fun <- tidytable::map(seq(.025,.975,.05), ~ purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>%
+  q_name <- tidytable::map_chr(c(0.075,0.25, 0.75, 0.925), ~ paste0("q", .x*100))
+  q_fun <- tidytable::map(c(0.075,0.25, 0.75, 0.925), ~ purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>%
     purrr::set_names(nm = q_name)
   
   data %>% 
@@ -187,16 +223,8 @@ quants_mean <- function(data, var, recr, dmr, ret_age) {
     dplyr::group_by(years) %>%
     dplyr::summarise_at(dplyr::vars({{var}}), tibble::lst(!!!q_fun, mean)) %>% 
     tidytable::pivot_longer(-c(years, mean)) %>%
-    tidytable::mutate(grouping = tidytable::case_when(name == q_name[1] | name == q_name[20] ~ 1,
-                                                      name == q_name[2] | name == q_name[19] ~ 2,
-                                                      name == q_name[3] | name == q_name[18] ~ 3,
-                                                      name == q_name[4] | name == q_name[17] ~ 4,
-                                                      name == q_name[5] | name == q_name[16] ~ 5,
-                                                      name == q_name[6] | name == q_name[15] ~ 6,
-                                                      name == q_name[7] | name == q_name[14] ~ 7,
-                                                      name == q_name[8] | name == q_name[13] ~ 8,
-                                                      name == q_name[9] | name == q_name[12] ~ 9,
-                                                      name == q_name[10] | name == q_name[11] ~ 10)) %>% 
+    tidytable::mutate(grouping = tidytable::case_when(name == q_name[1] | name == q_name[4] ~ 1,
+                                                      name == q_name[2] | name == q_name[3] ~ 2)) %>% 
     tidytable::mutate(min = min(value),
                       max = max(value),
                       .by = c(years, grouping),
@@ -211,7 +239,7 @@ quant_it <- function(data, recr, dmr, ret_age) {
                    quants(data, 'rev', recr, dmr, ret_age),
                    quants(data, 'ssb', recr, dmr, ret_age),
                    quants_mean(data, 'dead', recr, dmr, ret_age),
-                   quants(data, 'recr', recr, dmr, ret_age))
+                   quants_mean(data, 'recr', recr, dmr, ret_age))
 }
 # evaluate multiple varaibles at once - may need updated with additional/other variables
 # for age data 
@@ -266,10 +294,10 @@ cleanup <- function(files, id=NULL, age=3){
   c2 = readRDS(here::here('data', c[grepl('hi_lo', c)])) 
   c3 = readRDS(here::here('data', c[grepl('lo_hi', c)])) 
   
-  d0 = readRDS(here::here('data', c[grepl('hist', d)]))
-  d1 = readRDS(here::here('data', c[grepl('rec_recr', d)]))
-  d2 = readRDS(here::here('data', c[grepl('hi_lo', d)])) 
-  d3 = readRDS(here::here('data', c[grepl('lo_hi', d)])) 
+  d0 = readRDS(here::here('data', d[grepl('hist', d)]))
+  d1 = readRDS(here::here('data', d[grepl('rec_recr', d)]))
+  d2 = readRDS(here::here('data', d[grepl('hi_lo', d)])) 
+  d3 = readRDS(here::here('data', d[grepl('lo_hi', d)])) 
   
   ## no dmr 
   if(length(a)>0){
