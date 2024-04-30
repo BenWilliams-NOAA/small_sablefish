@@ -22,33 +22,41 @@ five <- readRDS(here::here('output', 'five.RDS'))
 
 
 # median tables ------
-bind_rows(bind_rows(log$ts), bind_rows(full_abc$ts), bind_rows(trwl_10$ts), bind_rows(avg$ts), bind_rows(var$ts)) %>%   
-  filter(id!='recr', grepl('hist-0', scenario)) %>% #,
-  # years %in% 2025:2034) %>%
-  mutate(median = ifelse(id == 'dead', mean, median)) %>% 
-  # mutate(type = case_when(grepl('-log', scenario) ~ log,
-  #                         grepl('-5', scenario) ~ 5,
-  #                         TRUE ~ 3),
-  #        scenario = gsub('.{2}$', '', scenario)) %>% 
-  group_by(scenario, id) %>% 
-  summarise(m = mean(median, na.rm=T))  %>% 
-  pivot_wider(names_from = scenario, values_from = m) %>% View
-
+## base tables 
 bind_rows(base$ts) %>% 
-  filter(
-    id != 'recr') %>% 
-  filter(years %in% c(2024:2034)) %>% 
-  group_by(id, scenario) %>% 
-  mutate(median = ifelse(id == 'dead', mean, median)) %>% 
-  summarise(median = round(mean(median, na.rm=T),4)) %>% 
-  pivot_wider(names_from = id, values_from = median) 
+  # filter(years %in% 2024:2033) %>% 
+  mutate(median = ifelse(is.na(median), mean, median)) %>% 
+  group_by(scenario, id) %>% 
+  summarise(m = mean(median, na.rm=T)) %>% 
+  pivot_wider(names_from = id, values_from = m) %>% 
+  separate(scenario, sep = '-', c('rec_type', 'dmr', 'age'))
 
-filter(years %in% c(2024:2034)) %>% 
-  group_by(id, scenario) %>% 
-  mutate(median = ifelse(id == 'dead', mean, median)) %>% 
-  summarise(median = round(mean(median, na.rm=T),4)) %>% 
-  pivot_wider(names_from = id, values_from = median) %>% View
-mutate(dead_catch = round(dead_catch, 4))
+
+# variants
+# only filtering historical recruitment w/20% dmr
+
+bind_rows(bind_rows(trwl_10$ts), 
+          bind_rows(reg_shift$ts), 
+          bind_rows(var$ts),
+          bind_rows(avg$ts), 
+          bind_rows(log$ts),
+          bind_rows(full_abc$ts),
+          bind_rows(cap$ts), 
+          bind_rows(cap_var$ts), 
+          bind_rows(hind_cap$ts), 
+          bind_rows(hind_var$ts), 
+          bind_rows(four$ts), 
+          bind_rows(five$ts)) %>% 
+  filter(grepl('hist-20-', scenario)) %>% # grepl('hist-0-', scenario) if want sensitivity w/full retention
+  filter(years %in% 2024:2033) %>%
+  mutate(median = ifelse(is.na(median), mean, median)) %>% 
+  group_by(scenario, id) %>% 
+  summarise(m = mean(median, na.rm=T)) %>% 
+  pivot_wider(names_from = id, values_from = m) %>% 
+  separate(scenario, sep = '[:-]', c('rec_type', 'dmr', 'age', 'variant')) 
+
+
+
 
 
 
