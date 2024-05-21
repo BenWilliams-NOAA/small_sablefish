@@ -1027,7 +1027,12 @@ FUNCTION Get_Population_Projection
          {
           price_age_scaled_f(i,j) = price_age_f(j)+((landings_SAFE-landings_tot(i))/(landings_SAFE-land_price_max))*(max_price_f(j)-price_age_f(j));     
           price_age_scaled_m(i,j) = price_age_m(j)+((landings_SAFE-landings_tot(i))/(landings_SAFE-land_price_max))*(max_price_m(j)-price_age_m(j));
-         }       
+         }
+        if(landings_tot(i) <= land_price_max)        // if landings are greater than terminal year of SAFE landings, then maintain price at input price (low price)
+         {
+          price_age_scaled_f(i,j) = max_price_f(j);                                                  
+          price_age_scaled_m(i,j) = max_price_m(j);                                                                                 
+         }
         if(price_age_scaled_f(i,j) < price_age_f(j))                                     // if price goes below min_price set to min_price
          {
           price_age_scaled_f(i,j) = price_age_f(j);
@@ -1350,11 +1355,11 @@ REPORT_SECTION
   report<<CAA_dead_m<<endl;
   report<<"$laa_fg_f"<<endl;
   report<<CAA_landed_FG_f<<endl;
-  report<<"laa_fg_m"<<endl;
+  report<<"$laa_fg_m"<<endl;
   report<<CAA_landed_FG_m<<endl;
   report<<"$laa_tr_f"<<endl;
   report<<CAA_landed_trwl_f<<endl;
-  report<<"laa_tr_m"<<endl;
+  report<<"$laa_tr_m"<<endl;
   report<<CAA_landed_trwl_m<<endl;
   report<<"$daa_dead_f"<<endl;
   report<<DAA_dead_f<<endl;
@@ -1372,11 +1377,11 @@ REPORT_SECTION
   report<<CAA_ABC_dead_m<<endl;
   report<<"$laa_abc_fg_f"<<endl;
   report<<CAA_ABC_landed_FG_f<<endl;
-  report<<"laa_abc_fg_m"<<endl;
+  report<<"$laa_abc_fg_m"<<endl;
   report<<CAA_ABC_landed_FG_m<<endl;
   report<<"$laa_abc_tr_f"<<endl;
   report<<CAA_ABC_landed_trwl_f<<endl;
-  report<<"laa_abc_tr_m"<<endl;
+  report<<"$laa_abc_tr_m"<<endl;
   report<<CAA_ABC_landed_trwl_m<<endl;
   report<<"$daa_abc_dead_f"<<endl;
   report<<DAA_ABC_dead_f<<endl;
@@ -1394,11 +1399,11 @@ REPORT_SECTION
   report<<CAA_OFL_dead_m<<endl;
   report<<"$laa_ofl_fg_f"<<endl;
   report<<CAA_OFL_landed_FG_f<<endl;
-  report<<"laa_ofl_fg_m"<<endl;
+  report<<"$laa_ofl_fg_m"<<endl;
   report<<CAA_OFL_landed_FG_m<<endl;
   report<<"$laa_ofl_tr_f"<<endl;
   report<<CAA_OFL_landed_trwl_f<<endl;
-  report<<"laa_ofl_tr_m"<<endl;
+  report<<"$laa_ofl_tr_m"<<endl;
   report<<CAA_OFL_landed_trwl_m<<endl;
   report<<"$daa_ofl_dead_f"<<endl;
   report<<DAA_OFL_dead_f<<endl;

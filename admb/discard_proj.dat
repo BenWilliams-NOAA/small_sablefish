@@ -146,21 +146,21 @@
 #/////// Retention and DMR  Pars ////////////////
 #//////////////////////////////////////////////// 
 # ret_age_f                           // female age that start retaining fish when retention type ==1, NOTE: this is actual age-1 because model running from age 1 (==real age-2)
-1 #2
+2
 # ret_a50_f;                          // female retention logistic fxn age at 50% retention when retention type ==2, NOTE: this is actual age minus 1 because model running from age 1 (==real age-2)
 2
 # ret_delta_f                         // female retention logistic fxn age between 50% retention and 95% retention when retention type ==2
 1
 # ret_age_m                           // male age that start retaining fish when retention type ==1, NOTE: this is actual age minus 1 because model running from age 1 (==real age-2)
-1 #2
+2
 # ret_a50_m                           // male retention logistic fxn age at 50% retention when retention type ==2, NOTE: this is actual age minus 1 because model running from age 1 (==real age-2)
 2
 # ret_delta_m                         // male retention logistic fxn age between 50% retention and 95% retention when retention type ==2
 1 
 # DMR_f                               // female discard mortality rate
-0.
+0.2
 # DMR_m                               // male discard mortality rate
-0.
+0.2
 #////////////////////////////////////////////////
 #/////// Price Pars /////////////////////////////
 #////////////////////////////////////////////////
