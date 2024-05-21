@@ -118,50 +118,6 @@ pull_data <- function(loc, years, ages) {
   list(ts = ts, ad = ad, caa = caa)
 }
 
-# function for determining the quantiles for each variable, and appending id for future identification
-# for time series data 
-
-# quantile_df <- function(x, probs = c(0.075,0.25, 0.5, 0.75, 0.925)) {
-#   tibble(
-#     val = quantile(x, probs, na.rm = TRUE),
-#     median = median(x),
-#     quant = probs
-#   )
-# }
-# 
-# quants <- function(x, probs = c(0.075, 0.25, 0.75, 0.925)) {
-#   tibble(
-#     val = quantile(x, probs, na.rm = TRUE),
-#     median = median(x),
-#     mean = mean(x),
-#     se = sd(x) / sqrt(n()),
-#     quant = probs
-#   ) %>% 
-#   mutate(lci = mean - 1.96 * se,
-#          uci = mean + 1.96 * se) 
-# }
-
-
-# a0$ts %>% 
-#   reframe(
-#     across(c(ssb, recr, dead_catch, bio, dead, rev), quants, .unpack=T), 
-#     .by = years
-#     ) %>% pivot_longer(-years) %>% 
-#     mutate(id = gsub('\\_.*', '', name),
-#           id1 = gsub('.*\\_', '', name)) %>% 
-#      head()
-# 
-# a0$ad %>% 
-#   reframe(
-#     across(c(ypr_age, spr_age, rpr_age), quants, .unpack=T), 
-#     .by = age
-#     ) %>% 
-#      head()     
-# 
-# x <- c(10, 15, 18, 12)
-# quants(x)
-# a0$ts %>% 
-#   reframe(quantile_df(ssb, recr, dead_catch, bio, dead, rev), .by = years)
 
 quants <- function(data, var, recr, dmr, ret_age) {
   q_name <- tidytable::map_chr(c(0.075,0.25, 0.75, 0.925), ~ paste0("q", .x*100))
@@ -180,6 +136,29 @@ quants <- function(data, var, recr, dmr, ret_age) {
                       max = max(value),
                       .by = c(years, grouping),
                       id = !!var,
+                      scenario = paste(recr, dmr, ret_age, sep = '-')) 
+}
+
+quantsssb <- function(data, recr, dmr, ret_age) {
+  q_name <- tidytable::map_chr(c(0.075,0.25, 0.75, 0.925), ~ paste0("q", .x*100))
+  q_fun <- tidytable::map(c(0.075,0.25, 0.75, 0.925), ~ purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>%
+    purrr::set_names(nm = q_name)
+  
+  data %>% 
+    tidytable::mutate(value = as.numeric(value)) %>% 
+    tidytable::summarise(n = sum(value[age>=10]),
+                         tot = sum(value), .by = c(sim, year)) %>% 
+    tidytable::mutate(perc = n / tot) %>%
+    group_by(year) %>% 
+    dplyr::summarise_at(dplyr::vars(perc), tibble::lst(!!!q_fun, median)) %>% 
+    tidytable::pivot_longer(-c(year, median)) %>% 
+    tidytable::mutate(grouping = tidytable::case_when(name == q_name[1] | name == q_name[4] ~ 1,
+                                                      name == q_name[2] | name == q_name[3] ~ 2
+    )) %>% 
+    tidytable::mutate(min = min(value),
+                      max = max(value),
+                      .by = c(year, grouping),
+                      id = 'ssbaa',
                       scenario = paste(recr, dmr, ret_age, sep = '-')) 
 }
 
@@ -239,7 +218,8 @@ quant_it <- function(data, recr, dmr, ret_age) {
                    quants(data, 'rev', recr, dmr, ret_age),
                    quants(data, 'ssb', recr, dmr, ret_age),
                    quants_mean(data, 'dead', recr, dmr, ret_age),
-                   quants_mean(data, 'recr', recr, dmr, ret_age))
+                   quants_mean(data, 'recr', recr, dmr, ret_age),
+                   quants(data, 'bio', recr, dmr, ret_age))
 }
 # evaluate multiple varaibles at once - may need updated with additional/other variables
 # for age data 
@@ -250,27 +230,41 @@ quant_ita <- function(data, recr, dmr, ret_age) {
 }
 
 # plotting functions 
-plot_swath <- function(data) {
+plot_swath <- function(data, x) {
   data %>%
-    ggplot2::ggplot(ggplot2::aes(years, group = grouping)) +
-    ggplot2::geom_ribbon(ggplot2::aes(ymin = min, ymax = max), alpha = 0.07) +
-    ggplot2::geom_line(ggplot2::aes(y = median)) #+
-  # afscassess::scale_x_tickr(data=data, var=years, to=10, start = 2024) +
-  # ggplot2::ylab("Revenue OFL") +
-  # ggplot2::xlab("Year") +
-  # ggplot2::expand_limits(y = 0) 
+    filter(id==x) %>% 
+    ggplot2::ggplot(ggplot2::aes(years, group = interaction(grouping, scenario), color = scenario, fill = scenario)) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = min, ymax = max), alpha = 0.07, color = NA) +
+    ggplot2::geom_line(ggplot2::aes(y = median)) +
+    # afscassess::scale_x_tickr(data=data, var=years, to=10, start = 2024) +
+    # ggplot2::ylab("Revenue OFL") +
+    # ggplot2::xlab("Year") +
+    ggplot2::expand_limits(y = 0) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    scico::scale_fill_scico_d(palette = 'roma')
 }
 
-plot_swath2 <- function(data) {
+
+# plotting functions 
+plot_ssb<- function(data, x) {
   data %>%
-    ggplot2::ggplot(ggplot2::aes(years, group = interaction(grouping, scenario), color = scenario, fill = scenario)) +
-    ggplot2::geom_ribbon(ggplot2::aes(ymin = min, ymax = max), alpha = 0.01, color = NA) +
+    filter(id==x) %>% 
+    ggplot2::ggplot(ggplot2::aes(year, group = interaction(grouping, scenario), color = scenario, fill = scenario)) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = min, ymax = max), alpha = 0.07, color = NA) +
     ggplot2::geom_line(ggplot2::aes(y = median)) +
-    afscassess::scale_x_tickr(data=data, var=years, to=10, start = 2024) 
-  # ggplot2::ylab("Revenue OFL") +
-  # ggplot2::xlab("Year") +
-  # ggplot2::expand_limits(y = 0) 
+    ggplot2::expand_limits(y = 0) 
 }
+
+# plot_swath2 <- function(data) {
+#   data %>%
+#     ggplot2::ggplot(ggplot2::aes(years, group = interaction(grouping, scenario), color = scenario, fill = scenario)) +
+#     ggplot2::geom_ribbon(ggplot2::aes(ymin = min, ymax = max), alpha = 0.01, color = NA) +
+#     ggplot2::geom_line(ggplot2::aes(y = median)) +
+#     afscassess::scale_x_tickr(data=data, var=years, to=10, start = 2024) 
+#   # ggplot2::ylab("Revenue OFL") +
+#   # ggplot2::xlab("Year") +
+#   # ggplot2::expand_limits(y = 0) 
+# }
 
 cleanup <- function(files, id=NULL, age=3){
   a <- files[grepl('base', files) | grepl('no_disc', files)]
@@ -312,6 +306,11 @@ cleanup <- function(files, id=NULL, age=3){
               quant_ita(a1$ad, recr='rec', dmr, ret_age),
               quant_ita(a2$ad, recr='hilo', dmr, ret_age),
               quant_ita(a3$ad, recr='lohi', dmr, ret_age)) -> aa
+    
+    bind_rows(quantsssb(a0$ssbaa, recr='hist', dmr, ret_age),
+              quantsssb(a1$ssbaa, recr='rec', dmr, ret_age),
+              quantsssb(a2$ssbaa, recr='hilo', dmr, ret_age),
+              quantsssb(a3$ssbaa, recr='lohi', dmr, ret_age)) -> assb
   }
   
   ## 12% dmr 
@@ -327,6 +326,11 @@ cleanup <- function(files, id=NULL, age=3){
             quant_ita(b2$ad, recr='hilo', dmr, ret_age),
             quant_ita(b3$ad, recr='lohi', dmr, ret_age)) -> ba
   
+  bind_rows(quantsssb(b0$ssbaa, recr='hist', dmr, ret_age),
+            quantsssb(b1$ssbaa, recr='rec', dmr, ret_age),
+            quantsssb(b2$ssbaa, recr='hilo', dmr, ret_age),
+            quantsssb(b3$ssbaa, recr='lohi', dmr, ret_age)) -> bssb
+  
   ## 20% dmr  
   dmr = 20 
   bind_rows(quant_it(c0$ts, recr='hist', dmr, ret_age),
@@ -338,6 +342,11 @@ cleanup <- function(files, id=NULL, age=3){
             quant_ita(c1$ad, recr='rec', dmr, ret_age),
             quant_ita(c2$ad, recr='hilo', dmr, ret_age),
             quant_ita(c3$ad, recr='lohi', dmr, ret_age)) -> ca
+  
+  bind_rows(quantsssb(c0$ssbaa, recr='hist', dmr, ret_age),
+            quantsssb(c1$ssbaa, recr='rec', dmr, ret_age),
+            quantsssb(c2$ssbaa, recr='hilo', dmr, ret_age),
+            quantsssb(c3$ssbaa, recr='lohi', dmr, ret_age)) -> cssb
   
   ## 35% dmr 
   dmr = 35 
@@ -351,6 +360,13 @@ cleanup <- function(files, id=NULL, age=3){
             quant_ita(d2$ad, recr='hilo', dmr, ret_age),
             quant_ita(d3$ad, recr='lohi', dmr, ret_age)) -> da
   
+  bind_rows(quantsssb(d0$ssbaa, recr='hist', dmr, ret_age),
+            quantsssb(d1$ssbaa, recr='rec', dmr, ret_age),
+            quantsssb(d2$ssbaa, recr='hilo', dmr, ret_age),
+            quantsssb(d3$ssbaa, recr='lohi', dmr, ret_age)) -> dssb
+  
+  
+  
   if(length(a)>0){
     rm(a0, a1, a2, a3)
   }
@@ -359,10 +375,12 @@ cleanup <- function(files, id=NULL, age=3){
   
   if(length(a)>0){
     list(ts = list(no_disc=a, dmr12=b, dmr20=c, dmr35=d),
-         ad = list(no_disc=aa, dmr12=ba, dmr20=da, dmr35=da))
+         ad = list(no_disc=aa, dmr12=ba, dmr20=da, dmr35=da),
+         ssbaa = list(no_disc=assb, dmr12=bssb, dmr20=cssb, dmr35=dssb))
   } else {
     list(ts = list(dmr12=b, dmr20=c, dmr35=d),
-         ad = list(dmr12=ba, dmr20=da, dmr35=da))
+         ad = list(dmr12=ba, dmr20=da, dmr35=da),
+         ssbaa = list(dmr12=bssb, dmr20=cssb, dmr35=dssb))
   }
   
   

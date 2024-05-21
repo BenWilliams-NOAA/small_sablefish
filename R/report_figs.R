@@ -218,11 +218,66 @@ bind_rows(base$ts) %>%
   afscassess::scale_x_tickr(data=base$ts$no_disc, var=years, to=10, start = 2020)  +
   expand_limits(y=0) +
   xlab('Year') +
-  ylab('Recruitment')
+  ylab('Recruitment') 
 
 dev.off()
 
+# alt recruit 
+fls <- tolower(list.files(here::here('data'), pattern = ".RData", full.names = F))
+files <- fls[!grepl('trwl', fls, ignore.case = T) &
+                  !grepl('var', fls, ignore.case = T) &
+                  !grepl('cap', fls, ignore.case = T) &
+                  !grepl('hind', fls, ignore.case = T) &
+                  !grepl('full_abc', fls, ignore.case = T) &
+                  !grepl('avg', fls, ignore.case = T) & 
+                  !grepl('reg', fls, ignore.case = T) &
+                  !grepl('log', fls, ignore.case = T) &
+                  !grepl('age-4', fls, ignore.case = T) & 
+                  !grepl('age-5', fls, ignore.case = T)]
+a <- files[grepl('base', files) | grepl('no_disc', files)]
+a0 = readRDS(here::here('data', 'base.rdata'))
+a1 = readRDS(here::here('data', a[grepl('rec_recr', a)]))
+a2 = readRDS(here::here('data', a[grepl('hi_lo', a)]))
+a3 = readRDS(here::here('data', a[grepl('lo_hi', a)]))
+a0$ts %>% 
+  filter(sim %in% sample(1:500, 5)) %>% 
+  mutate(scenario = 'Historical') -> df0
 
+a1$ts %>% 
+  filter(sim %in% sample(1:99, 5)) %>% 
+  mutate(scenario = 'Recent') -> df1
+
+a2$ts %>% 
+  filter(sim %in% sample(1:99, 5)) %>% 
+  mutate(scenario = 'High to Low') -> df2
+
+a3$ts %>% 
+  filter(sim %in% sample(1:99, 5)) %>% 
+  mutate(scenario = 'Low to High') -> df3
+
+df <- bind_rows(df0, df1, df2, df3)
+
+png(filename=here::here("figs", "alt-recruits.png"), width = 6.5, height = 6.5,
+    units = "in", type ="cairo", res = 200)
+
+bind_rows(base$ts) %>% 
+  filter(id == 'recr', grepl('0-1', scenario)) %>% 
+  mutate(scenario = case_when(grepl('hist', scenario) ~ 'Historical',
+                              grepl('rec', scenario) ~ 'Recent',
+                              grepl('lohi', scenario) ~ 'Low to High',
+                              grepl('hilo', scenario) ~ 'High to Low'),
+         scenario = factor(scenario, levels = c('Historical', 'Recent', 'Low to High', 'High to Low'))) %>% 
+  ggplot(aes(years, mean)) + 
+  geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2) +
+  geom_line() + 
+  facet_wrap(~scenario) +
+  afscassess::scale_x_tickr(data=base$ts$no_disc, var=years, to=10, start = 2020)  +
+  expand_limits(y=0) +
+  xlab('Year') +
+  ylab('Recruitment') +
+  geom_line(data=df, aes(y = recr, group=sim), alpha = 0.1)
+
+dev.off()
 # figure 4 ----
 png(filename=here::here("figs", "hist.png"), width = 6.5, height = 6.5,
     units = "in", type ="cairo", res = 200)
